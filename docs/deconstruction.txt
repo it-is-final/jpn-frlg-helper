@@ -1,0 +1,103 @@
+# Pseudocode for the Grab ACE tool
+# Should probably be reimplemented slightly differently
+
+def calculate_mon_word(pid, tid, sid, game):
+    available = []
+    substructure = substructures[pid % 24]
+    encryption_key = (((sid << 16) | tid) ^ pid) & 0xFFFF
+    compatible_substructures = [
+        substructures[6],
+        substructures[7],
+        substructures[8],
+        substructures[12],
+        substructures[13],
+        substructures[18],
+        substructures[19],
+        substructures[22]
+    ]
+    if substructure in compatible_substructures:
+        if (substructure == substructures[8]
+            or substructure == substructure[22]):
+            adjustment_type = "EV"
+        else:
+            adjustment_type = "Exp"
+        switch game:
+            case "FireRed":
+                glitch_mons = firered_list
+            case "LeafGreen":
+                glitch_mons = leafgreen_list
+        for index in glitch_mons:
+            word_index = index ^ encryption_key
+            if word_index in word_list:
+                available.append({
+                    "Mon": index,
+                    "Word": word_index
+                })
+    else:
+        adjustment_type = None
+    return adjustment_type, available
+
+
+def calculate_base_adjustment(
+    second_word_index,
+    glitch_mon_index,
+    base_mon_index,
+    encryption_key
+):
+    mon_difference = glitch_mon_index - base_mon_index
+    decrypted_value = second_word_index ^ encryption_key
+    adjustment = (mon_difference + decrypted_value) & 0xFFFF
+    return adjustment
+
+
+def calculate_ev_adjustment(
+    second_word_index,
+    glitch_mon_index,
+    base_mon_index,
+    encryption_key
+):
+    base_adjustment = calculate_base_adjustment(
+        second_word_index,
+        glitch_mon_index,
+        base_mon_index,
+        encryption_key
+    )
+    # ev_1 & ev_2 pairs can be HP/Attack or Sp.Attack/Sp.Defence
+    ev_1 = adjustment % 256
+    ev_2 = math.floor(adjustment / 256)
+    return [ev_1, ev_2]
+
+
+def calculate_exp_adjustment(
+    second_word_index,
+    glitch_mon_index,
+    base_mon_index,
+    encryption_key
+):
+    return calculate_base_adjustment(
+        second_word_index,
+        glitch_mon_index,
+        base_mon_index,
+        encryption_key
+    )
+
+
+def search_all_words(
+    adjustment_type,
+    glitch_mon_index,
+    base_mon_index,
+    encryption_key
+):
+    word_mapping = []
+    for index in word_list:
+        word_mapping.append({
+            "Word": index,
+            "Adjustment": calculate_adjustment(
+                              adjustment_type,
+                              index,
+                              glitch_mon_index,
+                              base_mon_index,
+                              encryption_key
+                          )
+        })
+    return word_mapping
