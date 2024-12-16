@@ -4,7 +4,9 @@ You want to perform this setup but cannot understand a single bit of Japanese, a
 ## Preamble
 Unlike the mail glitch in Western FRLG, Japanese FRLG's mail glitch writes to an area that comprises all of substructure 2, and small bits of substructures 3 and 4.
 This means that obtaining glitch Pokémon is going to be a different process as we cannot swap substructures, instead having to edit the substructure and carefully managing the checksum to turn a regular Pokémon into a grab ACE Pokémon.
+
 This setup requires a specific Pokémon and adjusting the stats in a way that when two words of the 'mail' is edited (one for the species and the other for the stats that are adjusted), the checksum is preserved and the Pokémon becomes a glitch Pokémon.
+
 However not all of the grab ACE Pokémon act in desirable ways so usually after converting the Pokémon, a code is executed to generate a Thumb grab ACE Pokémon with index number `0xFFC9` which will be the primary way ACE will be executed.
 
 ## I: Getting a suitable Pokémon
@@ -14,15 +16,19 @@ This Pokémon's PID must satisfy the following equation `((PID ^ TID) & 0xFFFF) 
  - `&` is the bitwise AND operation
  - the glitch Pokémon's index is from the list in `jpn_frlg_helper/resources/(your game version).csv`
  - the word index from `jpn_frlg_helper/resources/easy_chat.csv`
+
 We can get this Pokémon via RNG manipulation, of which you can use [my tool](https://github.com/it-is-final/JPNGrabACEHelper) or attempt to use a myriad of custom settings in PokéFinder's researcher to find your target.
 The other option is to hope that the game's RNG has given you a suitable Pokémon, which after determining the PID, can pass in to the `Calculate PID` component of the tool and check the Pokémon's suitability.
+
 Once you have obtained your target, pass in the target's PID, your TID, and your game version then let it calculate the results.
 It should have given you the PID substructure (not that important here), the adjustment type, the encryption key (the result of `(PID ^ TID) & 0xFFFF`), and a list of glitch Pokémon with their corresponding words.
-Take note of one of these words (and perhaps the word group they belong to for easier searching), this will be your species word.
+
+Take note of one of these words (and perhaps the word group they belong to for easier searching, and maybe the glitch species associated with it), this will be your species word.
 
 ## II: Getting our adjustment numbers
 We have found one of the words we will be inputting into mail slot 255, but we still need the other word.
 A nice part of this setup is that the word can be any word in the easy chat system however we can also let the tool run through all of the words then we can decide which one to use based off the degree of adjustment required.
+
 In the tool, select `Calculate Adjustment`, then pass in the:
  - base Pokémon's index number
  - the glitch Pokémon's index number
@@ -30,7 +36,9 @@ In the tool, select `Calculate Adjustment`, then pass in the:
  - the other word index (or leave blank for the tool to run through all of the words)
  - the Pokémon's adjustment type
  - current Pokémon experience (if adjustment type is experience, else leave blank)
+
 The tool should then output the word (which will be the adjustment word) along with either: a singular number (for experience adjustment) or two numbers separated by a comma in parentheses (for EV adjustment).
+
 If you have chose to let it run through the whole list, it will show the whole list of words each with their own adjustment numbers.
 Choose a word in the list as your adjustment word then note down the adjustment numbers.
 
