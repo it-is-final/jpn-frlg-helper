@@ -17,7 +17,7 @@ This Pokémon's PID must satisfy the following equation `((PID ^ TID) & 0xFFFF) 
  - the glitch Pokémon's index is from the list in `jpn_frlg_helper/resources/(your game version).csv`
  - the word index from `jpn_frlg_helper/resources/easy_chat.csv`
 
-We can get this Pokémon via RNG manipulation, of which you can use [my tool](https://github.com/it-is-final/JPNGrabACEHelper) or attempt to use a myriad of custom settings in PokéFinder's researcher to find your target.
+We can get this Pokémon via RNG manipulation, of which you can use the `Search RNG` option of this Python script or attempt to use a myriad of custom settings in PokéFinder's researcher to find your target.
 The other option is to hope that the game's RNG has given you a suitable Pokémon, which after determining the PID, can pass in to the `Calculate PID` component of the tool and check the Pokémon's suitability.
 
 Once you have obtained your target, pass in the target's PID, your TID, and your game version then let it calculate the results.
