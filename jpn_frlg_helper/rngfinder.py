@@ -80,13 +80,13 @@ def search_pidrng(
         game_version: GameVersion,
 ):
     usable_advances: list[AdvanceEntry] = []
-    for advance, pid in enumerate(rng):
+    for advance, pid in enumerate(rng, start=initial_advances):
         if get_adjustment_type(pid) is None:
             continue
         results = calc_mon_word(pid, tid, game_version)
         if len(results) > 0:
             usable_advances.append({
-                "Advance": initial_advances + advance,
+                "Advance": advance,
                 "PID": pid,
             })
     return tuple(usable_advances)
