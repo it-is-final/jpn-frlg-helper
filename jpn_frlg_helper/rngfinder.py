@@ -4,7 +4,7 @@ from jpn_frlg_helper.constants import (
     EncounterType,
     AdvanceEntry
     )
-from jpn_frlg_helper.wordcalc import calc_mon_word
+from jpn_frlg_helper.wordcalc import calc_mon_word, get_adjustment_type
 
 
 class PokeRNG:
@@ -28,12 +28,11 @@ def pidrng_static(
 ):
     main_rng = PokeRNG(seed)
     advance_rng = PokeRNG(0) # 0 is a placeholder value
-    main_rng._next16(initial_advances + delay)
+    main_rng._next(initial_advances + delay)
     for _ in range(max_advances + 1):
         advance_rng.state = main_rng.state
-        pid_low = advance_rng._next16()
-        pid_high = advance_rng._next16()
-        pid = (pid_high << 16) | pid_low
+        pid = advance_rng._next16()
+        pid |= advance_rng._next16() << 16
         yield pid
         main_rng._next()
 
@@ -46,15 +45,14 @@ def pidrng_wild(
 ):
     main_rng = PokeRNG(seed)
     advance_rng = PokeRNG(0) # 0 is a placeholder value
-    main_rng._next16(initial_advances + delay)
+    main_rng._next(initial_advances + delay)
     for _ in range(max_advances + 1):
         advance_rng.state = main_rng.state
         advance_rng._next(2)
         pid_nature = advance_rng._next16() % 25
         while True:
-            pid_low = advance_rng._next16()
-            pid_high = advance_rng._next16()
-            pid = (pid_high << 16) | pid_low
+            pid = advance_rng._next16()
+            pid |= advance_rng._next16() << 16
             if (pid % 25) == pid_nature:
                 break
         yield pid
@@ -83,6 +81,8 @@ def search_pidrng(
 ):
     usable_advances: list[AdvanceEntry] = []
     for advance, pid in enumerate(rng):
+        if get_adjustment_type(pid) is None:
+            continue
         results = calc_mon_word(pid, tid, game_version)
         if len(results) > 0:
             usable_advances.append({
@@ -127,6 +127,16 @@ def get_params():
             print(err)
     while True:
         try:
+            user_input = input("Seed: ")
+            seed = int(user_input, 16)
+            if not (0x0 <= seed <= 0xFFFFFFFF):
+                print("Invalid seed")
+                continue
+            break
+        except ValueError as err:
+            print(err)
+    while True:
+        try:
             user_input = input("Initial advances: ")
             initial_advances = int(user_input)
             if not (initial_advances >= 0):
@@ -155,21 +165,22 @@ def get_params():
             break
         except ValueError as err:
             print(err)
-    return game_version, encounter_type, tid, initial_advances, advances, delay
+    return game_version, encounter_type, tid, seed, initial_advances, advances, delay
 
 
-def go():
+def main():
     (
         game_version,
         encounter_type,
         tid,
+        seed,
         initial_advances,
         advances,
         delay,
     ) = get_params()
     pidrng = get_pidrng(
         encounter_type,
-        tid,
+        seed,
         initial_advances,
         advances,
         delay)
