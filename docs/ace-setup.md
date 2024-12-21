@@ -20,6 +20,10 @@ This Pokémon's PID must satisfy the following equation `((PID ^ TID) & 0xFFFF) 
 We can get this Pokémon via RNG manipulation, of which you can use the `Search RNG` option of this Python script or attempt to use a myriad of custom settings in PokéFinder's researcher to find your target.
 The other option is to hope that the game's RNG has given you a suitable Pokémon, which after determining the PID, can pass in to the `Calculate PID` component of the tool and check the Pokémon's suitability.
 
+> [!NOTE]  
+> It is recommended that you set 'Advances' (not Initial Advances) to 100, as you are very likely to find a target.
+> The searcher may become very slow if you set 'Advances' to a higher amount.
+
 Once you have obtained your target, pass in the target's PID, your TID, and your game version then let it calculate the results.
 It should have given you the PID substructure (not that important here), the adjustment type, the encryption key (the result of `(PID ^ TID) & 0xFFFF`), and a list of glitch Pokémon with their corresponding words.
 
