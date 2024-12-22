@@ -56,7 +56,7 @@ To do this, we use the `Search RNG` tool.
 1. Select a seed you are aiming to get the target Pokémon from
 2. Input the data into the `Search RNG` tool (Game version, encounter type, TID, seed, initial advances, advances, and delay (set to 0 if you are not using Lua scripts to RNG manipulate))
     - 'Advances' can be translated as 'Max Advances' in PokéFinder
-    - 'Advances' generally does not need to be set to a value greater than 100, there are a lot of target Pokémon whose PID is suitable for this setup. Any greater would make the script very slow.
+    - 'Advances' generally does not need to be set to a value greater than 100, there are a lot of target Pokémon whose PID is suitable for this setup.
 4. It should output a list of advances with their associated PID, select an advance then perform an RNG manipulation to obtain the Pokémon on that advance.
 5. Use the `Calculate PID` tool, then enter the game version, TID, and PID then it should output data about the PID.
 
