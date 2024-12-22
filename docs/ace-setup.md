@@ -160,4 +160,4 @@ If you want to get rid of the other grab ACE Pokémon created from earlier, then
 4. Select the decamark using the white hand
 5. Select release and confirm
 
-You have completed the setup to grab ACE on Japanese FRLG.
+You have completed the grab ACE setup for Japanese FireRed and LeafGreen.
