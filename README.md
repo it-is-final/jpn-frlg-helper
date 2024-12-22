@@ -20,3 +20,5 @@ Maybe `docs/ace-setup.md` will help.
 © 2024 Luong Truong
 
 This tool is licensed under the terms of the MIT license, check `LICENSE` for more information.
+
+The documentation is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
