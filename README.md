@@ -14,7 +14,7 @@ This tool calculates the mail words needed to perform the ACE setup described in
 4. Type `python -m jpn_frlg_helper` then press enter
 
 ### Need help on performing the ACE setup
-Maybe `docs/ace-setup.md` will help.
+[Here](docs/ace-setup.md) is my best effort at an English guide for this setup.
 
 ## Licence
 © 2024 Luong Truong

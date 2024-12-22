@@ -14,8 +14,8 @@ We want to get a Pokémon with a specific substructure order (specifically subst
 This Pokémon's PID must satisfy the following equation `((PID ^ TID) & 0xFFFF) ^ (glitch Pokémon's index) == (a word index from the easy chat system)`, where:
  - `^` is the bitwise XOR operation
  - `&` is the bitwise AND operation
- - the glitch Pokémon's index is from the list in `jpn_frlg_helper/resources/(your game version).csv`
- - the word index from `jpn_frlg_helper/resources/easy_chat.csv`
+ - the glitch Pokémon's index is from the list in [`jpn_frlg_helper/resources/(your game version).csv`](/jpn_frlg_helper/resources/)
+ - the word index from [`jpn_frlg_helper/resources/easy_chat.csv`](/jpn_frlg_helper/resources/easy_chat.csv)
 
 We can obtain this Pokémon either through catching a random Pokémon then check its PID or we can use RNG manipulation to guarantee us a suitable Pokémon.
 
