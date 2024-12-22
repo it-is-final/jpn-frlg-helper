@@ -1,6 +1,6 @@
 import csv
 from typing import TypedDict
-from jpn_frlg_helper.constants import ECSEntry, GlitchPokemonEntry
+from jpn_frlg_helper.constants import ECSWord, ECSEntry, GlitchPokemonEntry
 
 
 PokemonEntry = TypedDict("PokemonEntry", {
@@ -9,22 +9,19 @@ PokemonEntry = TypedDict("PokemonEntry", {
 })
 
 
-def get_ecs_data() -> tuple[ECSEntry, ...]:
+def get_ecs_data() -> dict[int, ECSWord]:
     with open("jpn_frlg_helper/resources/easy_chat.csv", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
-        return tuple([
-            {
-                "Index": int(entry["Index"], 16),
-                "Group": entry["Group"],
-                "Word": entry["Word"],
-            } for entry in reader
-        ])
+        return {
+            int(entry["Index"], 16): ECSWord(Group=entry["Group"], Word=entry["Word"])
+            for entry in reader
+        }
 
 
-def get_glitchmon_data(version: str) -> tuple[GlitchPokemonEntry, ...]:
+def get_glitchmon_data(version: str) -> list[GlitchPokemonEntry]:
     with open(f"jpn_frlg_helper/resources/{version}.csv", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
-        return tuple([
+        return [
             {
                 "Index": int(entry["Index"], 16),
                 "Raw Address": int(entry["Raw Address"], 16),
@@ -32,18 +29,18 @@ def get_glitchmon_data(version: str) -> tuple[GlitchPokemonEntry, ...]:
                 "Mode": entry["Mode"],
                 "Box Entrypoint": entry["Box Entrypoint"]
             } for entry in reader
-        ])
+        ]
 
 
-def get_pokemon_index() -> tuple[PokemonEntry, ...]:
+def get_pokemon_index() -> list[PokemonEntry]:
     with open("jpn_frlg_helper/resources/pokemon_index.csv", "r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
-        return tuple([
+        return [
             {
                 "Index": int(row["Index"]),
                 "Name": row["Name"]
             } for row in reader
-        ])
+        ]
 
 
 easy_chat_system = get_ecs_data()

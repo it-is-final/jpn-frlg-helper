@@ -34,11 +34,12 @@ def calc_mon_word(
             glitch_mon_list = leafgreen_data
     for glitch_mon in glitch_mon_list:
         word_index = glitch_mon['Index'] ^ encryption_key
-        word = next(
-            (word for word in easy_chat_system if word['Index'] == word_index),
-        None)
-        if word is not None:
-            available.append((glitch_mon, word))
+        if word_index in easy_chat_system:
+            available.append((glitch_mon, ECSEntry(
+                Index=word_index,
+                Group=easy_chat_system[word_index]['Group'],
+                Word=easy_chat_system[word_index]['Word']
+            )))
     return available
 
 

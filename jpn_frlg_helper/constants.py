@@ -24,6 +24,12 @@ ECSEntry = TypedDict("ECSEntry", {
 })
 
 
+ECSWord = TypedDict("ECSWord", {
+    "Group": str,
+    "Word": str,
+})
+
+
 GlitchPokemonEntry = TypedDict("GlitchPokemonEntry", {
     "Index": int,
     "Raw Address": int,
