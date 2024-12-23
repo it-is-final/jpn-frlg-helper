@@ -55,36 +55,19 @@ def calc_adjustment(
 
 
 def calc_exp_adjustment(
-        word_index: int,
-        glitch_mon_index: int,
-        base_mon_index: int,
-        encryption_key: int,
+        base_adjustment: int,
         exp: int | None
 ):
     experience = exp if exp is not None else 0 
-    adjustment = calc_adjustment(
-        word_index,
-        glitch_mon_index,
-        base_mon_index,
-        encryption_key
-    )
+    adjustment = base_adjustment
     while adjustment < experience:
         adjustment += 0x10000
     return adjustment
 
 
 def calc_ev_adjustment(
-        word_index: int,
-        glitch_mon_index: int,
-        base_mon_index: int,
-        encryption_key: int
+        base_adjustment: int
 ):
-    base_adjustment = calc_adjustment(
-        word_index,
-        glitch_mon_index,
-        base_mon_index,
-        encryption_key
-    )
     ev_1 = base_adjustment & 0xFF
     ev_2 = (base_adjustment >> 8) & 0xFF
     return ev_1, ev_2

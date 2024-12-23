@@ -1,6 +1,8 @@
-from jpn_frlg_helper.constants import AdjustmentType
+import csv
+from pathlib import Path
+from jpn_frlg_helper.constants import AdjustmentType, ECSEntry
 from jpn_frlg_helper.resources.getter import easy_chat_system
-from jpn_frlg_helper.wordcalc import calc_ev_adjustment, calc_exp_adjustment
+from jpn_frlg_helper.wordcalc import calc_ev_adjustment, calc_exp_adjustment, calc_adjustment
 
 
 def get_params():
@@ -86,33 +88,51 @@ def main():
         exp,
         adjustment_type
     ) = get_params()
-    results: list[tuple[int, int | tuple[int, int]]] = []
+    results: list[tuple[int, int]] = []
     if word_index is None:
-        for word in easy_chat_system:
-            if adjustment_type is AdjustmentType.EV:
-                results.append((
-                    word["Index"],
-                    calc_ev_adjustment(word["Index"], glitch_pokemon, base_pokemon, encryption_key)
-                    ))
-            if adjustment_type is AdjustmentType.EXP:
-                results.append((
-                    word["Index"],
-                    calc_exp_adjustment(word["Index"], glitch_pokemon, base_pokemon, encryption_key, exp)
-                    ))
+        for ecs_word_index in sorted(easy_chat_system.keys()):
+            results.append((ecs_word_index, calc_adjustment(ecs_word_index, glitch_pokemon, base_pokemon, encryption_key)))
     else:
-        if adjustment_type is AdjustmentType.EV:
-            results.append((
-                word_index,
-                calc_ev_adjustment(word_index, glitch_pokemon, base_pokemon, encryption_key),
-            ))
+        results.append((word_index, calc_adjustment(word_index, glitch_pokemon, base_pokemon, encryption_key)))
+    if len(results) > 1:
+        user_input = input("Enter a file path: ")
+        output_path = Path(user_input)
+        with output_path.open("w", encoding="utf-8", newline="") as f:
+            csv_writer = csv.writer(f)
+            csv_writer.writerow(["Index", "Group", "Word", "Experience", "EV 1", "EV 2"])
+            for result in results:
+                exp_adjust = (
+                    calc_exp_adjustment(result[1], exp)
+                    if adjustment_type is AdjustmentType.EXP else None
+                )
+                ev_adjust = (
+                    calc_ev_adjustment(result[1])
+                    if adjustment_type is AdjustmentType.EV else (None, None)
+                )
+                row = (
+                    f"{result[0]:04X}",
+                    easy_chat_system[result[0]]["Group"],
+                    easy_chat_system[result[0]]["Word"],
+                    exp_adjust,
+                    ev_adjust[0],
+                    ev_adjust[1]
+                )
+                csv_writer.writerow(row)
+    else:
+        result = results[0]
+        exp_adjust = (
+            calc_exp_adjustment(result[1], exp)
+        )
+        ev_adjust = (
+            calc_ev_adjustment(result[1])
+        )
+        word = ECSEntry(
+            Index=result[0],
+            Group=easy_chat_system[result[0]]["Group"],
+            Word=easy_chat_system[result[0]]["Word"]
+        )
         if adjustment_type is AdjustmentType.EXP:
-            results.append((
-                word_index,
-                calc_exp_adjustment(word_index, glitch_pokemon, base_pokemon, encryption_key, exp)
-            ))
-    if adjustment_type is AdjustmentType.EV:
-        print("The EV pairs to adjust can be either HP / Atk or Sp.Attack / Sp.Defense")
-    for result in results:
-        word_entry = next((word for word in easy_chat_system if word['Index'] == result[0]))
-        word_temp = "{0:04X} : {1} : {2}".format(word_entry["Index"], word_entry["Group"], word_entry["Word"])
-        print(f"""{word_temp} - {str(result[1])}""")
+            adjust_string = str(exp_adjust)
+        if adjustment_type is AdjustmentType.EV:
+            adjust_string = f"{ev_adjust[0]}/{ev_adjust[1]}"
+        print(f"{word["Index"]:04X} | {word["Group"]} | {word["Word"]} | {adjust_string}")
