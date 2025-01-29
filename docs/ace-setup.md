@@ -10,12 +10,10 @@ This setup requires a specific Pokémon and adjusting the stats in a way that wh
 However not all of the grab ACE Pokémon act in desirable ways so usually after converting the Pokémon, a code is executed to generate a Thumb grab ACE Pokémon with index number `0xFFC9` which will be the primary way ACE will be executed.
 
 ## I: Getting a suitable Pokémon
-We want to get a Pokémon with a specific substructure order (specifically substructure orders 6, 7, 8, 12, 13, 18, and 19).
-This Pokémon's PID must satisfy the following equation `((PID ^ TID) & 0xFFFF) ^ (glitch Pokémon's index) == (a word index from the easy chat system)`, where:
- - `^` is the bitwise XOR operation
- - `&` is the bitwise AND operation
- - the glitch Pokémon's index is from the list in [`jpn_frlg_helper/resources/(your game version).csv`](/jpn_frlg_helper/resources/)
- - the word index from [`jpn_frlg_helper/resources/easy_chat.csv`](/jpn_frlg_helper/resources/easy_chat.csv)
+In summary we are using a Pokémon with a specific PID for the mail corruption.
+The Pokémon has the following characteristics:
+- PID substructure orders 8 or 22 if adjusting with EVs or 6, 7, 12, 13, 18 or 19 if adjusting experience
+- `PID_LOW XOR TID XOR GLITCH_POKEMON_INDEX` must be a writable easy chat system word index
 
 We can obtain this Pokémon either through catching a random Pokémon then check its PID or we can use RNG manipulation to guarantee us a suitable Pokémon.
 
@@ -38,8 +36,8 @@ The tool outputs a PID along with an associated 'Method' that the Pokémon was g
 - Event gift Pokémon
 
 **Wild**
-- **Method 1**: FireRed or LeafGreen
-- **Method 2**: *Not common in any game*
+- **Method 1**: FRLG and RS
+- **Method 2**: Emerald
 - **Method 4**: Fishing
 
 > [!IMPORTANT]  
@@ -47,48 +45,82 @@ The tool outputs a PID along with an associated 'Method' that the Pokémon was g
 > Generally the reported PID is wrong if writing the glitch mail in step III results in a `Bad EGG`.
 > If the encounter type is not listed under a 'reverse' Method, it will never be generated under a 'reverse' Method, and vice versa.
 
-To check that the PID satisfies the conditions outlined earlier, we use the `Calculate PID` tool, input the game version, TID, and PID then it should output data about the PID.
-If the adjustment type is reported as `None` or the list of Glitch Pokémon and their associated words is printed as `None`, then the PID is not suitable for the setup, either try a PID associated with another Method (heeding the above note) or catch another Pokémon. Else, jump to the end of step I which should explain what to do with these results.
-
 ### Obtaining with RNG manipulation
+> [!NOTE]
+> At this moment it is highly recommended to check if the PID will return results in the tool linked at [Getting information about the PID](#getting-information-about-the-pid) before RNG manipulation
+> This is due to the Japanese tool removing a few easy chat system words presumably for simplicity but the RNG tool calculates targets with the removed words in mind
+> This note will disappear once I can get a good GUI onto my English tools
+
 We can select a target Pokémon with a PID is guarantted to satisfy the above conditions through RNG manipulation.
-To do this, we use the `Search RNG` tool.
+To do this, we use the [Donor Search webtool](https://it-is-final.github.io/jp-frlg-mail-donor-searcher/) that I have made.
 1. Select a seed you are aiming to get the target Pokémon from
-2. Input the data into the `Search RNG` tool (Game version, encounter type, TID, seed, initial advances, advances, and delay (set to 0 if you are not using Lua scripts to RNG manipulate))
+2. Input the data into the tool (Game version, encounter type, TID, seed, initial advances, advances, and delay (set to 0 if you are not using Lua scripts to RNG manipulate))
     - 'Advances' can be translated as 'Max Advances' in PokéFinder
     - 'Advances' generally does not need to be set to a value greater than 100, there are a lot of target Pokémon whose PID is suitable for this setup.
 4. It should output a list of advances with their associated PID, select an advance then perform an RNG manipulation to obtain the Pokémon on that advance.
-5. Use the `Calculate PID` tool, then enter the game version, TID, and PID then it should output data about the PID.
 
-The `Calculate PID` tool should output the PID's substructure, the adjustment type of the PID, the encryption key (the result of `(PID ^ TID) & 0xFFFF`), and a list of glitch Pokémon with their corresponding words.
-Take note of the adjustment type, the encryption key, one of the glitch Pokémon's index, and that glitch Pokémon's associated word (with their associated group if it helps with finding the word). The associated word is your *species word*.
+### Getting information about the PID
+> [!NOTE]
+> I am working on an English tool for this, and the original Japanese tool notably leaves out a few words from the easy chat system that should be there as well as their word groups.
+> If anything you RNG manipulated returns no results, it is because those PIDs were calculated with the removed easy chat system words in mind, for now pick a different PID.
+1. Go to tool labeled under ② at [this page](http://detelony.blog.fc2.com/blog-entry-29.html).
+2. Select the correct game
+3. Input the PID under ‘性格値’
+4. Input the TID under ‘表ID’
+5. Click on the button labeled ‘計算’
+
+Results should populate as shown below:
+![A screenshot of the Japanese PID calculator tool](japanese-pid-calc.png)
+
+If no results show underneath the tool, that means you need to use a different Pokémon.
+
+Take note of the below fields:
+- ‘暗号化定数’ is the encryption key, the Japanese tool autofills it but you should still take note of it
+- ‘メールバグ判定’ is the adjustment type, it can have one of three values:
+    - 経験値調整型 is Experience adjustment type
+    - 努力値調整型 is EV adjustment type
+    - 使用不可 is no adjustment type, you should use a different Pokémon if you get this
+- Underneath the ‘種族ID’ column in the table is the index numbers of the available glitch Pokémon, take note of the one with the lower index value (usually means less adjustment)
+- Underneath the ‘簡単会話ID’ column in the table is the index numbers of the corresponding easy chat words for the glitch Pokémon and with it the ‘単語’ column consists of the corresponding word for the index
+    - This is your species word, use the word that corresponds to the glitch species you took note of earlier
 
 ## II: Getting our adjustment numbers
 > [!WARNING]  
 > You should probably save before performing any of the following actions, that way you have a recovery point in case of future mistakes.
 > Do not perform any later saves until you have `0xFFC9` in step IV.
 
-We have found one of the words we will be inputting into mail slot 255, but we still need the other word.
-A nice part of this setup is that the word can be any word in the easy chat system however we can also let the tool run through all of the words then we can decide which one to use based off the degree of adjustment required.
+1. Go to tool labeled under ③ at [this page](http://detelony.blog.fc2.com/blog-entry-29.html).
+2. Write the index of your glitch Pokémon in the ‘バグポケモンID’ textbox or use the dropdown box which is prepopulated with the results from the previous step
+3. ‘材料ポケモンID’ is the index of the base Pokémon, if you know its index number (and it must be in hex) write it in the textbox, else the Japanese names can be selected in the dropdown box
+4. In the dropdown box for ‘簡単会話ID’, select ‘全単語総当たり’ to be presented with every possible option, or input the index number of the easy chat word you want to use as the checksum word in the textbox
+    - There are more words in the dropdown menu for specific word groups, you can also use them for convenience as your checksum word
+5. Click on the button labeled ‘計算’
 
-In the tool, select `Calculate Adjustment`, then pass in the:
- - base Pokémon's index number
- - the glitch Pokémon's index number
- - encryption key
- - the other word index (or leave blank for the tool to run through all of the words)
- - the Pokémon's adjustment type
- - current Pokémon experience (if adjustment type is experience, else leave blank)
+If you chose to let it present you with every possible easy chat word, a window should open with the easy chat words along with the adjustment to make.
+Note down a word of your choosing and its associated adjustment value, this is the checksum word.
 
-The tool should then output the word (which will be the adjustment word) along with either: a singular number (for experience adjustment) or two numbers separated by a comma in parentheses (for EV adjustment).
+If you chose an individual word, the adjustment value appears below the tool.
 
-If you have chose to let it run through the whole list, it will show the whole list of words each with their own adjustment numbers.
-Choose a word in the list as your adjustment word then note down the adjustment numbers.
+For Pokémon who need to be EV adjusted, the adjustment will be in the following template
+```
+H###A### or C###D###
+```
+These are the Japanese EV notations and below is a quick guide to what each letter means:
+- H: HP
+- A: Attack
+- B: Defense
+- C: Sp.Attack
+- D: Sp.Defense
+- S: Speed
+This tells you the EVs that your Pokémon must have before corruption.
 
-We will need to adjust the Pokémon before writing the glitchy mail, what stats to adjust depends on the adjustment type.
-Below is a guide on how to adjust your Pokémon based on the adjustment type and the adjustment numbers.
- - **Experience-adjusted Pokémon**: The Pokémon's experience must be equal to the adjustment number.
- - **EV-adjusted Pokémon**: The first stat's (HP or Sp.Attack) EVs must be equal to the first adjustment number.
-   The second stat's (Attack if first stat is HP, Sp.Defense if first stat is Sp.Attack) EVs must be equal to the second adjustment number.
+For Pokémon who needs to be experience adjusted, the adjustment will be in the following template:
+```
+_____ or ______ … (以降+65536)
+```
+The first one is your base adjustment value.
+If your Pokémon’s experience is greater than the adjustment value, then add 65536 to it until it is greater than your Pokémon’s experience points.
+The new adjustment value is the experience value your Pokémon must have before corruption.
 
 ## III: Writing glitchy mail
 Perform the mail glitch like how it is done in any other version of FRLG.
@@ -114,9 +146,6 @@ Once you have written the glitchy mail, check Box 3 again, a decamark should hav
 >     - This case only happens if the donor Pokémon is not obtained via RNG manipulation, in this case, start back at step I and either catch a different Pokémon or use another PID reported in the 'IVs to PID' tool as the Pokémon's PID.
 
 ## IV: Getting `0xFFC9`
-> [!TIP]
-> If you picked `0xFFC9` as your glitch Pokémon in step I, then you can skip the box code that creates `0xFFC9`
-
 While we now have a glitch Pokémon, we generally only use this to create another glitch Pokémon that will actually execute most codes we want.
 This is because:
 - The Pokémon when swapped may execute at a different point in the boxes than what is expected
@@ -142,13 +171,7 @@ Box  5: O	[O]
 > - There is Pokémon or invisible Pokémon in the box slots after the entrypoint (this is shown in Step I on the glitch Pokémon list).
 >     - Move them out or clear them via group select.
 > - You have the wrong Pokémon
->     - See the bad EGG notice in step III for instructions and treat the decamark as if it was the bad EGG.
-
-`0xFFC9` should appear in party slot 3, it's species name should be `むぅァいァい`(FireRed) or `mみみぅむぅ`(LeafGreen), and it should be holding the `????????` item.
-To test whether the glitch Pokémon works, run the following code:
-```
-Box  1: ぞ ぞ ミ び	[ぞぞミび]
-```
+>     - See the bad EGG notice in step III for instructions and treat the decamark as if it is a bad EGG.
 
 If the code does not crash, then you can follow the next few instructions to clean up the boxes.
 Else check the notice on what to do if the game crashes.
