@@ -1,0 +1,48 @@
+FUNC get_adjustment_type(pid):
+	pid_substructure <- pid % 24
+	IF pid_substructure IN {8, 22}:
+		adjustment_type <- "EV"
+		RETURN adjustment_type
+	IF pid_substructure IN {6, 7, 12, 13, 18, 19}:
+		adjustment_type <- "experience"
+		RETURN adjustment_type
+	adjustment_type <- NONE
+	RETURN adjustment_type	
+
+FUNC calculate_species_word(pid, tid, sid, game):
+	available_words <- []
+	encryption_key <- (tid ^ pid) & 0xFFFF
+	SWITCH game:
+		CASE Game.FIRE_RED:
+			species_list <- firered_list
+		CASE Game.LEAF_GREEN:
+			species_list <- leafgreen_list
+	FOR species_index IN species_list:
+		word_index <- species_index ^ encryption_key
+		IF word_index IN easy_chat_words:
+			available_words.add((word_index, species_index))
+	RETURN available_words
+
+FUNC calculate_base_adjustment(
+		checksum_word_index,
+		base_species_index,
+		new_species_index,
+		tid,
+		pid
+):
+	encryption_key <- (tid ^ pid) & 0xFFFF
+	species_index_difference <- new_species_index - base_species_index
+	decrypted_value <- checksum_word_index ^ encryption_key
+	adjustment <- (mon_difference + decrypted_value) & 0xFFFF
+	RETURN adjustment
+
+FUNC calculate_experience_adjustment(base_adjustment, experience):
+	adjustment <- base_adjustment
+	WHILE adjustment < experience:
+		adjustment <- adjustment + 0x10000
+	RETURN adjustment
+
+FUNC calculate_ev_adjustment(base_adjustment):
+	ev_1 <- base_adjustment & 0xFF
+	ev_2 <- (base_adjustment >> 8) & 0xFF
+	RETURN ev_1, ev_2
